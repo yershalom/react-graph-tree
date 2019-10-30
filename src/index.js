@@ -90,7 +90,7 @@ export default class Tree extends Component {
 
     // dimensions
     const widthOfOneNode = 200
-    const heightOfOneNode = 60
+    const heightOfOneNode = 20
     const spacingOfNodes = 20
     const parentTimesSize = 3
     const parentTimesToSide = 2
