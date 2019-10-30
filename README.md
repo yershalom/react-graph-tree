@@ -15,12 +15,31 @@ npm install --save react-graph-tree
 ```jsx
 import React, { Component } from 'react'
 
-import MyComponent from 'react-graph-tree'
+import Tree from 'react-graph-tree'
 
 class Example extends Component {
   render () {
+    const data = {
+          'label': 'Top Level',
+          'children': [
+            {
+              'label': 'Level 2: A',
+              'children': [
+                {
+                  'label': 'Son of A'
+                },
+                {
+                  'label': 'Daughter of A'
+                }
+              ]
+            },
+            {
+              'label': 'Level 2: B'
+            }
+          ]
+        }
     return (
-      <MyComponent />
+      <Tree data={data} />
     )
   }
 }

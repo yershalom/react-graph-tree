@@ -1,12 +1,32 @@
 import React, { Component } from 'react'
 
-import ExampleComponent from 'react-graph-tree'
+import Tree from 'react-graph-tree'
 
 export default class App extends Component {
   render () {
+    const data = {
+      'label': 'Top Level',
+      'children': [
+        {
+          'label': 'Level 2: A',
+          'children': [
+            {
+              'label': 'Son of A'
+            },
+            {
+              'label': 'Daughter of A'
+            }
+          ]
+        },
+        {
+          'label': 'Level 2: B'
+        }
+      ]
+    }
+
     return (
       <div>
-        <ExampleComponent text='Modern React component module' />
+        <Tree data={data} />
       </div>
     )
   }

@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 
-import styles from './styles.css'
+const d3 = require('d3')
 
-export default class ExampleComponent extends Component {
+export default class Tree extends Component {
   static propTypes = {
-    text: PropTypes.string
+    data: PropTypes.object
   }
 
   normalizeNumericValue(number, divider = null, {amountMode = false, amountSymbol = '$'}) {
@@ -72,99 +72,73 @@ export default class ExampleComponent extends Component {
   }
 
   componentDidMount() {
-    document.getElementById('svgHolder').innerHTML = '';
+    document.getElementById('svgHolder').innerHTML = ''
 
-// ************** BASE VARIABLES **************
-// getting data
-    const data = {
-      "label": "Top Level",
-      "value": 100,
-      "children": [
-        {
-          "label": "Level 2: A",
-          "value": 100,
-          "children": [
-            {
-              "label": "Son of A",
-              "value": 100
-            },
-            {
-              "label": "Daughter of A",
-              "value": 100
-            }
-          ]
-        },
-        {
-          "label": "Level 2: B",
-          "value": 100
-        }
-      ]
-    };
+    // ************** BASE VARIABLES **************
 
-    const mode = '';
-    const amountSymbol = '%';
+    const mode = ''
+    const amountSymbol = '%'
 
+    const root = this.normalizeData({data: this.props.data, mode, amountSymbol})
 
-    const root = this.normalizeData({data, mode, amountSymbol});
+    // dimensions
+    const widthOfOneNode = 200
+    const heightOfOneNode = 60
+    const spacingOfNodes = 20
+    const parentTimesSize = 3
+    const parentTimesToSide = 2
+    const marginLeaf = 3
+    const margin = {top: 20, right: 120, bottom: 20, left: 120}
+    const width = calculateWidth(root) - margin.right - margin.left
+    const height = calculateHeight(root) - margin.top - margin.bottom
 
-// dimensions
-    const widthOfOneNode = 200;
-    const heightOfOneNode = 60;
-    const spacingOfNodes = 20;
-    const parentTimesSize = 3;
-    const parentTimesToSide = 2;
-    const marginLeaf = 3;
-    const margin = {top: 20, right: 120, bottom: 20, left: 120},
-      width = calculateWidth(root) - margin.right - margin.left,
-      height = calculateHeight(root) - margin.top - margin.bottom;
-
-// circles
+    // circles
     //  entrance
-    const entranceCircleSize = 10;
-    const entranceCircleColor = 'white';
+    const entranceCircleSize = 10
+    const entranceCircleColor = 'white'
 
     //  actual
-    const baseCircleSize = 50;
-    const baseCircleColor = 'white';
-    const baseCircleStrokeColor = '#25b7ce';
+    const baseCircleSize = 50
+    const baseCircleColor = 'white'
+    const baseCircleStrokeColor = '#25b7ce'
 
-// chart config
-    const tree = d3.layout.tree().size([height, width]);
+    // chart config
+    const tree = d3.layout.tree().size([height, width])
 
-    const commasAndDotsRegex = /[.,\s]/g;
-    const item = document.getElementById('svgHolder');
+    const commasAndDotsRegex = /[.,\s]/g
+    const item = document.getElementById('svgHolder')
     const svg = d3.select(item).insert('svg')
       .attr('width', width + margin.right + margin.left)
       .attr('height', height + margin.top + margin.bottom)
       .insert('g')
-      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
 
-    let i = 0;
-    const collapsibleTree = false;
-    root.x0 = height / 2;
-    root.y0 = 0;
+    let i = 0
+    const collapsibleTree = false
+    root.x0 = height / 2
+    root.y0 = 0
 
-// ************** END OF BASE VARIABLES **************
+    // ************** END OF BASE VARIABLES **************
 
-    generateChart(root);
+    generateChart(root)
 
-// ************** TREE FUNCTIONS **************
+    // ************** TREE FUNCTIONS **************
 
-// getting width
+    // getting width
     function getDepth(object) {
-      let depth = 0;
+      let depth = 0
       if (object.children) {
         object.children.forEach(function (d) {
-          const tempDepth = getDepth(d);
+          const tempDepth = getDepth(d)
           if (tempDepth > depth) {
             depth = tempDepth
           }
         })
       }
-      return 1 + depth;
+      return 1 + depth
     }
 
-// getting height
+    // getting height
 
     function diameterOfBinaryTree(root) {
       // let max = 0;
@@ -178,258 +152,255 @@ export default class ExampleComponent extends Component {
       //   const dl = dfs(node.children ? dfs(node.children[0]) : 0, max);
       //   const dr = dfs(node.children && node.children.length > 1 ? dfs(node.children[1]) : 0, max);
       //   const newMax = Math.max(max, dl + dr);
-      return 7;
+      return 7
       // }
     }
 
-
-// ************** END OF TREE FUNCTIONS **************
-// ************** WIDTH AND HEIGHT CALCULATIONS **************
+    // ************** END OF TREE FUNCTIONS **************
+    // ************** WIDTH AND HEIGHT CALCULATIONS **************
 
     function calculateWidth(data) {
-      const deepestDepth = getDepth(data);
-      return deepestDepth * (widthOfOneNode + spacingOfNodes);
+      const deepestDepth = getDepth(data)
+      return deepestDepth * (widthOfOneNode + spacingOfNodes)
     }
 
     function calculateHeight(data) {
-      let max;
-      const widthOfTree = diameterOfBinaryTree(data);
-      return widthOfTree * (heightOfOneNode + spacingOfNodes);
+      let max
+      const widthOfTree = diameterOfBinaryTree(data)
+      return widthOfTree * (heightOfOneNode + spacingOfNodes)
     }
 
-// ************** END OF WIDTH AND HEIGHT CALCULATIONS **************
-// ************** START OF GENERATING CHART **************
+    // ************** END OF WIDTH AND HEIGHT CALCULATIONS **************
+    // ************** START OF GENERATING CHART **************
 
     function generateChart(source) {
-
       // Compute the new tree layout.
-      const nodes = tree.nodes(root).reverse(),
-        links = tree.links(nodes);
+      const nodes = tree.nodes(root).reverse()
+      const links = tree.links(nodes)
 
       // Normalize for fixed-depth.
       nodes.forEach(function (d) {
-        d.y = d.depth * widthOfOneNode;
-      });
+        d.y = d.depth * widthOfOneNode
+      })
 
       // Update the nodes…
       const node = svg.selectAll('g.node')
         .data(nodes, function (d) {
-          return d.id || (d.id = ++i);
-        });
+          return d.id || (d.id = ++i)
+        })
 
       // Update the links…
       const link = svg.selectAll('line').data(links, function (d) {
-        return d.target.id;
-      });
+        return d.target.id
+      })
 
-      connectAllNodes(link);
+      connectAllNodes(link)
 
       const nodeEnter = node.enter().insert('g')
         .attr('class', 'node')
         .attr('transform', function (d) {
-          return 'translate(' + source.y0 + ',' + source.x0 + ')';
+          return 'translate(' + source.y0 + ',' + source.x0 + ')'
         })
         .on('click', function (d) {
           if (!isMaster(d) && !isLeaf(d) && collapsibleTree) {
-            return click(d);
+            return click(d)
           }
-          return null;
+          return null
         }).attr('transform', function (d) {
-          return 'translate(' + d.y + ',' + d.x + ')';
-        });
+          return 'translate(' + d.y + ',' + d.x + ')'
+        })
 
-
-      createCircle(nodeEnter.insert('rect'), baseCircleSize, 1, baseCircleColor, baseCircleStrokeColor);
+      createCircle(nodeEnter.insert('rect'), baseCircleSize, 1, baseCircleColor, baseCircleStrokeColor)
       // createValueCircle(nodeEnter.insert('rect'), 1);
 
-      createTextOnCircles(nodeEnter, entranceCircleSize);
+      createTextOnCircles(nodeEnter, entranceCircleSize)
       // createTextValue(nodeEnter);
 
       // Stash the old positions for transition.
       nodes.forEach(function (d) {
-        d.x0 = d.x;
-        d.y0 = d.y;
-      });
+        d.x0 = d.x
+        d.y0 = d.y
+      })
     }
 
-// Toggle children on click.
+    // Toggle children on click.
     function click(d) {
       if (d.children) {
-        d._children = d.children;
-        d.children = null;
+        d._children = d.children
+        d.children = null
       } else {
-        d.children = d._children;
-        d._children = null;
+        d.children = d._children
+        d._children = null
       }
-      generateChart(d);
+      generateChart(d)
     }
 
     function createTextValue(nodeEnter) {
       nodeEnter.insert('text')
         .attr('y', function (d) {
-          const isLeafY = 5;
-          const nonLeafY = -20;
-          const y = isLeaf(d) ? isLeafY : nonLeafY;
-          const dMargin = (d.marginTop || 0) - (d.marginBottom || 0);
-          const calculation = y + dMargin;
+          const isLeafY = 5
+          const nonLeafY = -20
+          const y = isLeaf(d) ? isLeafY : nonLeafY
+          const dMargin = (d.marginTop || 0) - (d.marginBottom || 0)
+          const calculation = y + dMargin
           return `${calculation}px`
         })
         .attr('x', function (d) {
-          const isLeafX = 90;
-          const nonLeafX = 55;
-          const x = isLeaf(d) ? isLeafX : nonLeafX;
-          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0);
-          const calculation = x + dMargin;
+          const isLeafX = 90
+          const nonLeafX = 55
+          const x = isLeaf(d) ? isLeafX : nonLeafX
+          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0)
+          const calculation = x + dMargin
           return `${calculation}px`
         })
         .attr('text-anchor', 'end')
         .attr('font-weight', '600')
         .attr('fill', function (d) {
-          return isLeaf(d) ? 'black' : 'white';
+          return isLeaf(d) ? 'black' : 'white'
         })
         .style('cursor', function (d) {
           if ((isLeaf(d) || isMaster(d)) || !collapsibleTree) {
-            return 'default';
+            return 'default'
           }
-          return 'pointer';
+          return 'pointer'
         })
         .text(function (d) {
-          return d._value ? d._value : d.value;
-        }); // todo: ellipsis.
+          return d._value ? d._value : d.value
+        }) // todo: ellipsis.
     }
 
     function createTextOnCircles(nodeEnter, circleSize) {
       nodeEnter.insert('text')
         .attr('y', function (d) {
-          const y = 5;
-          const calculation = y + (d.marginTop || 0) - (d.marginBottom || 0);
-          return `${calculation}px`;
+          const y = 5
+          const calculation = y + (d.marginTop || 0) - (d.marginBottom || 0)
+          return `${calculation}px`
         })
         .attr('x', function (d) {
-          const isLeafX = -40;
-          const nonLeafX = 0;
-          const masterX = -25;
-          const x = isLeaf(d) ? isLeafX : isMaster(d) ? masterX : nonLeafX;
-          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0);
-          const calculation = x + dMargin;
-          return `${calculation}px`;
+          const isLeafX = -40
+          const nonLeafX = 0
+          const masterX = -25
+          const x = isLeaf(d) ? isLeafX : isMaster(d) ? masterX : nonLeafX
+          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0)
+          const calculation = x + dMargin
+          return `${calculation}px`
         })
         .attr('text-anchor', function (d) {
-          return isLeaf(d) ? 'start' : 'middle';
+          return isLeaf(d) ? 'start' : 'middle'
         })
         .attr('font-size', function (d) {
-          return d.label.length > 12 || isLeaf(d) ? '12' : '14';
+          return d.label.length > 12 || isLeaf(d) ? '12' : '14'
         })
         .style('cursor', function (d) {
           if ((isLeaf(d) || isMaster(d)) || !collapsibleTree) {
-            return 'default';
+            return 'default'
           }
-          return 'pointer';
+          return 'pointer'
         })
         .text(function (d) {
-          return d.label;
-        }); // todo: ellipsis.
+          return d.label
+        }) // todo: ellipsis.
     }
 
     function isLeaf(d) {
-      return !d.children && !d._children;
+      return !d.children && !d._children
     }
 
     function isMaster(d) {
-      return !d.parent;
+      return !d.parent
     }
 
     function createValueCircle(node, fill) {
       node
         .attr('width', function (d) {
-          const baseWidth = marginLeaf*2;
-          const letterPxLength = 8;
-          const commaPxLength = 3;
-          const pickedValue = String(!isNaN(d._value) || !!d._value ? d._value : !isNaN(d.value) || !!d.value ? d.value : '');
-          const letters = pickedValue.replace(commasAndDotsRegex, '');
-          return isLeaf(d) ? 0 : `${baseWidth + (letters.length * letterPxLength) + ((pickedValue.length - letters.length) * commaPxLength)}px`;
+          const baseWidth = marginLeaf * 2
+          const letterPxLength = 8
+          const commaPxLength = 3
+          const pickedValue = String(!isNaN(d._value) || !!d._value ? d._value : !isNaN(d.value) || !!d.value ? d.value : '')
+          const letters = pickedValue.replace(commasAndDotsRegex, '')
+          return isLeaf(d) ? 0 : `${baseWidth + (letters.length * letterPxLength) + ((pickedValue.length - letters.length) * commaPxLength)}px`
         })
         .attr('height', function (d) {
-          return isLeaf(d) ? 0 : '18px';
+          return isLeaf(d) ? 0 : '18px'
         })
         .attr('x', function (d) {
-          const baseX = 56 - marginLeaf;
-          const pickedValue = String(!isNaN(d._value) || !!d._value ? d._value : !isNaN(d.value) || !!d.value ? d.value : '');
-          const letters = pickedValue.replace(commasAndDotsRegex, '');
-          const letterPxLength = 8;
-          const commaPxLength = 3;
-          const x = baseX - (letterPxLength * letters.length) - ((pickedValue.length - letters.length) * commaPxLength);
-          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0);
-          const calculation = x + dMargin;
-          return `${calculation}px`;
+          const baseX = 56 - marginLeaf
+          const pickedValue = String(!isNaN(d._value) || !!d._value ? d._value : !isNaN(d.value) || !!d.value ? d.value : '')
+          const letters = pickedValue.replace(commasAndDotsRegex, '')
+          const letterPxLength = 8
+          const commaPxLength = 3
+          const x = baseX - (letterPxLength * letters.length) - ((pickedValue.length - letters.length) * commaPxLength)
+          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0)
+          const calculation = x + dMargin
+          return `${calculation}px`
         })
         .attr('y', function (d) {
-          const y = -34;
-          const calculation = y + (d.marginTop || 0) - (d.marginBottom || 0);
-          return `${calculation}px`;
+          const y = -34
+          const calculation = y + (d.marginTop || 0) - (d.marginBottom || 0)
+          return `${calculation}px`
         })
         .attr('rx', '8px')
         .attr('ry', '8px')
         .attr('fill-opacity', fill)
         .style('fill', function (d) {
-          return d.stroke || d.fill || baseCircleStrokeColor;
+          return d.stroke || d.fill || baseCircleStrokeColor
         })
         .style('stroke', function (d) {
-          return d.stroke || d.fill || baseCircleStrokeColor;
+          return d.stroke || d.fill || baseCircleStrokeColor
         })
-        .style('stroke-width', '4px');
+        .style('stroke-width', '4px')
     };
 
     function createCircle(node, circleSize, fillOpacity, fill, stroke) {
       node
         .attr('width', function (d) {
           if (isMaster(d)) {
-            return circleSize * parentTimesSize;
+            return circleSize * parentTimesSize
           }
           if (isLeaf(d)) {
-            return circleSize * 3;
+            return circleSize * 3
           }
-          return circleSize * 2;
+          return circleSize * 2
         })
         .attr('height', function (d) {
           if (isMaster(d)) {
-            return circleSize * parentTimesSize;
+            return circleSize * parentTimesSize
           }
           if (isLeaf(d)) {
-            return '25';
+            return '25'
           }
           return circleSize * 2
         })
         .attr('x', function (d) {
-          const masterY = -(parentTimesToSide * circleSize);
-          const leafY = -circleSize;
-          const nonLeafY = -circleSize;
-          const y = isMaster(d) ? masterY : isLeaf(d) ? leafY : nonLeafY;
-          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0);
-          const calculation = y + dMargin;
-          return `${calculation}px`;
+          const masterY = -(parentTimesToSide * circleSize)
+          const leafY = -circleSize
+          const nonLeafY = -circleSize
+          const y = isMaster(d) ? masterY : isLeaf(d) ? leafY : nonLeafY
+          const dMargin = (d.marginLeft || 0) - (d.marginRight || 0)
+          const calculation = y + dMargin
+          return `${calculation}px`
         })
         .attr('y', function (d) {
-          const masterY = -(parentTimesSize / parentTimesToSide) * circleSize;
-          const leafY = -12;
-          const nonLeafY = -circleSize;
-          const y = isMaster(d) ? masterY : isLeaf(d) ? leafY : nonLeafY;
-          const dMargin = (d.marginTop || 0) - (d.marginBottom || 0);
-          const calculation = y + dMargin;
-          return `${calculation}px`;
+          const masterY = -(parentTimesSize / parentTimesToSide) * circleSize
+          const leafY = -12
+          const nonLeafY = -circleSize
+          const y = isMaster(d) ? masterY : isLeaf(d) ? leafY : nonLeafY
+          const dMargin = (d.marginTop || 0) - (d.marginBottom || 0)
+          const calculation = y + dMargin
+          return `${calculation}px`
         })
         .attr('rx', function (d) {
           if (isMaster(d)) {
-            return parentTimesSize * circleSize;
+            return parentTimesSize * circleSize
           }
           if (isLeaf(d)) {
             return '10px'
           }
-          return circleSize;
+          return circleSize
         })
         .attr('ry', function (d) {
           if (isMaster(d)) {
-            return parentTimesSize * circleSize;
+            return parentTimesSize * circleSize
           }
           if (isLeaf(d)) {
             return '10px'
@@ -438,12 +409,12 @@ export default class ExampleComponent extends Component {
         })
         .attr('fill-opacity', fillOpacity)
         .style('fill', function (d) {
-          return d.fill ? d.fill : fill;
+          return d.fill ? d.fill : fill
         })
         .style('stroke', function (d) {
-          return d.stroke ? d.stroke : stroke;
+          return d.stroke ? d.stroke : stroke
         })
-        .style('stroke-width', '2px');
+        .style('stroke-width', '2px')
     }
 
     function connectAllNodes(link) {
@@ -451,72 +422,71 @@ export default class ExampleComponent extends Component {
       link.enter().insert('line')
         .attr('class', 'flow-link')
         .attr('x1', function (d) {
-          const targetMargins = (d.target.marginLeft || 0) - (d.target.marginRight || 0);
-          return d.target.y + targetMargins;
+          const targetMargins = (d.target.marginLeft || 0) - (d.target.marginRight || 0)
+          return d.target.y + targetMargins
         })
         .attr('y1', function (d) {
-          const targetMargins = (d.target.marginTop || 0) - (d.target.marginBottom || 0);
-          return d.target.x + targetMargins;
+          const targetMargins = (d.target.marginTop || 0) - (d.target.marginBottom || 0)
+          return d.target.x + targetMargins
         })
         .attr('x2', function (d) {
           // todo: add (sourceMargin * 2/5) and (targetMargin * 3/5)
-          return d.source.y * (2 / 5) + d.target.y * (3 / 5);
+          return d.source.y * (2 / 5) + d.target.y * (3 / 5)
         })
         .attr('y2', function (d) {
-          const targetMargins = (d.target.marginTop || 0) - (d.target.marginBottom || 0);
-          return d.target.x + targetMargins;
+          const targetMargins = (d.target.marginTop || 0) - (d.target.marginBottom || 0)
+          return d.target.x + targetMargins
         })
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', 4)
-        .attr('stroke', 'lightgray');
+        .attr('stroke', 'lightgray')
 
-      //start points to their halves
+      // start points to their halves
       link.enter().insert('line')
         .attr('class', 'flow-link')
         .attr('x1', function (d) {
           // todo: add (sourceMargin * 2/5) and (targetMargin * 3/5)
-          return d.source.y * (2 / 5) + d.target.y * (3 / 5);
+          return d.source.y * (2 / 5) + d.target.y * (3 / 5)
         })
         .attr('y1', function (d) {
-          const sourceMargins = (d.source.marginTop || 0) - (d.source.marginBottom || 0);
-          return d.source.x + sourceMargins;
+          const sourceMargins = (d.source.marginTop || 0) - (d.source.marginBottom || 0)
+          return d.source.x + sourceMargins
         })
         .attr('x2', function (d) {
-          const sourceMargins = (d.source.marginLeft || 0) - (d.source.marginRight || 0);
-          return d.source.y + sourceMargins;
+          const sourceMargins = (d.source.marginLeft || 0) - (d.source.marginRight || 0)
+          return d.source.y + sourceMargins
         })
         .attr('y2', function (d) {
-          const sourceMargins = (d.source.marginTop || 0) - (d.source.marginBottom || 0);
-          return d.source.x + sourceMargins;
+          const sourceMargins = (d.source.marginTop || 0) - (d.source.marginBottom || 0)
+          return d.source.x + sourceMargins
         })
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', 4)
-        .attr('stroke', 'lightgray');
+        .attr('stroke', 'lightgray')
 
-
-      //connects lines vertically
+      // connects lines vertically
       link.enter().insert('line')
         .attr('class', 'flow-link')
         .attr('class', 'flow-link')
         .attr('x1', function (d) {
           // todo: add (sourceMargin * 2/5) and (targetMargin * 3/5)
-          return d.source.y * (2 / 5) + d.target.y * (3 / 5);
+          return d.source.y * (2 / 5) + d.target.y * (3 / 5)
         })
         .attr('y1', function (d) {
-          const sourceMargins = (d.source.marginTop || 0) - (d.source.marginBottom || 0);
-          return d.source.x + sourceMargins;
+          const sourceMargins = (d.source.marginTop || 0) - (d.source.marginBottom || 0)
+          return d.source.x + sourceMargins
         })
         .attr('x2', function (d) {
           // todo: add (sourceMargin * 2/5) and (targetMargin * 3/5)
-          return d.source.y * (2 / 5) + d.target.y * (3 / 5);
+          return d.source.y * (2 / 5) + d.target.y * (3 / 5)
         })
         .attr('y2', function (d) {
-          const targetMargins = (d.target.marginTop || 0) - (d.target.marginBottom || 0);
-          return d.target.x + targetMargins;
+          const targetMargins = (d.target.marginTop || 0) - (d.target.marginBottom || 0)
+          return d.target.x + targetMargins
         })
         .attr('stroke-width', 2)
         .attr('stroke-dasharray', 4)
-        .attr('stroke', 'lightgray');
+        .attr('stroke', 'lightgray')
     }
   }
 
