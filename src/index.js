@@ -1,11 +1,17 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import './styles.css'
 
 const d3 = require('d3')
 
 export default class Tree extends Component {
   static propTypes = {
-    data: PropTypes.object
+    data: PropTypes.object.isRequired,
+    direction: PropTypes.string
+  }
+
+  static defaultProps = {
+    direction: 'ltr'
   }
 
   normalizeNumericValue(number, divider = null, {amountMode = false, amountSymbol = '$'}) {
@@ -78,6 +84,7 @@ export default class Tree extends Component {
 
     const mode = ''
     const amountSymbol = '%'
+    const isLtr = this.props.direction === 'ltr'
 
     const root = this.normalizeData({data: this.props.data, mode, amountSymbol})
 
@@ -297,17 +304,23 @@ export default class Tree extends Component {
           }
           return 'pointer'
         })
+        .style('transform', function () {
+          if (isLtr) {
+            return 'rotate(0deg)'
+          }
+          return 'rotate(180deg)'
+        })
         .text(function (d) {
           return d.label
         }) // todo: ellipsis.
     }
 
     function isLeaf(d) {
-      return !d.children && !d._children
+      return true
     }
 
     function isMaster(d) {
-      return !d.parent
+      return false
     }
 
     function createValueCircle(node, fill) {
@@ -491,6 +504,8 @@ export default class Tree extends Component {
   }
 
   render() {
-    return <div id='svgHolder' />
+    const {direction} = this.props
+    const style = direction === 'rtl' ? {transform: 'rotate(180deg)'} : {}
+    return <div id='svgHolder' style={style} />
   }
 }

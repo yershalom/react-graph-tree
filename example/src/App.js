@@ -6,6 +6,8 @@ export default class App extends Component {
   render () {
     const data = {
       'label': 'Top Level',
+      'fill': 'red',
+      'stroke': 'red',
       'children': [
         {
           'label': 'Level 2: A',
@@ -26,7 +28,7 @@ export default class App extends Component {
 
     return (
       <div>
-        <Tree data={data} />
+        <Tree data={data} direction={`rtl`} />
       </div>
     )
   }

@@ -67,3 +67,7 @@ body{
 .stripe{
   background: linear-gradient(0deg, #ffffff 0%, #f7f9fa 10%, #f7f9fa 90%, #ffffff 100%);
 }
+
+.rotate {
+  transform: rotate(180deg);
+}
