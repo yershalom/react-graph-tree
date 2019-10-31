@@ -363,7 +363,7 @@ export default class Tree extends Component {
             return circleSize * parentTimesSize
           }
           if (isLeaf(d)) {
-            return circleSize * 3
+            return circleSize * 4
           }
           return circleSize * 2
         })
