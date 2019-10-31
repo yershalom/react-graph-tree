@@ -39,7 +39,8 @@ export default class App extends Component {
 
     return (
       <div>
-        <Tree data={data} direction={`rtl`} />
+        <Tree data={data} direction={`rtl`} id={`h`} />
+        <Tree data={data} direction={`rtl`} id={`q`} />
       </div>
     )
   }

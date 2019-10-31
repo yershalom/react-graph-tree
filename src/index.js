@@ -7,11 +7,13 @@ const d3 = require('d3')
 export default class Tree extends Component {
   static propTypes = {
     data: PropTypes.object.isRequired,
-    direction: PropTypes.string
+    direction: PropTypes.string,
+    id: PropTypes.string.isRequired
   }
 
   static defaultProps = {
-    direction: 'ltr'
+    direction: 'ltr',
+    id: 'svgHolder'
   }
 
   normalizeNumericValue(number, divider = null, {amountMode = false, amountSymbol = '$'}) {
@@ -78,7 +80,7 @@ export default class Tree extends Component {
   }
 
   componentDidMount() {
-    document.getElementById('svgHolder').innerHTML = ''
+    document.getElementById(this.props.id).innerHTML = ''
 
     // ************** BASE VARIABLES **************
 
@@ -113,7 +115,7 @@ export default class Tree extends Component {
     const tree = d3.layout.tree().size([height, width])
 
     const commasAndDotsRegex = /[.,\s]/g
-    const item = document.getElementById('svgHolder')
+    const item = document.getElementById(this.props.id)
     const svg = d3.select(item).insert('svg')
       .attr('width', width + margin.right + margin.left)
       .attr('height', height + margin.top + margin.bottom)
@@ -506,6 +508,6 @@ export default class Tree extends Component {
   render() {
     const {direction} = this.props
     const style = direction === 'rtl' ? {transform: 'rotate(180deg)'} : {}
-    return <div id='svgHolder' style={style} />
+    return <div id={this.props.id} style={style} />
   }
 }
