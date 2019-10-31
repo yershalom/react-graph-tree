@@ -161,7 +161,7 @@ export default class Tree extends Component {
       //   const dl = dfs(node.children ? dfs(node.children[0]) : 0, max);
       //   const dr = dfs(node.children && node.children.length > 1 ? dfs(node.children[1]) : 0, max);
       //   const newMax = Math.max(max, dl + dr);
-      return 7
+      return root.children.length
       // }
     }
 
