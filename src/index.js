@@ -161,7 +161,10 @@ export default class Tree extends Component {
       //   const dl = dfs(node.children ? dfs(node.children[0]) : 0, max);
       //   const dr = dfs(node.children && node.children.length > 1 ? dfs(node.children[1]) : 0, max);
       //   const newMax = Math.max(max, dl + dr);
-      return root.children.length
+      if (root && root.children) {
+        return root.children.length
+      }
+      return 7
       // }
     }
 
@@ -211,10 +214,7 @@ export default class Tree extends Component {
           return 'translate(' + source.y0 + ',' + source.x0 + ')'
         })
         .on('click', function (d) {
-          if (!isMaster(d) && !isLeaf(d) && collapsibleTree) {
-            return click(d)
-          }
-          return null
+          return click(d)
         }).attr('transform', function (d) {
           return 'translate(' + d.y + ',' + d.x + ')'
         })
@@ -234,14 +234,7 @@ export default class Tree extends Component {
 
     // Toggle children on click.
     function click(d) {
-      if (d.children) {
-        d._children = d.children
-        d.children = null
-      } else {
-        d.children = d._children
-        d._children = null
-      }
-      generateChart(d)
+      return d.label
     }
 
     function createTextValue(nodeEnter) {
@@ -301,9 +294,6 @@ export default class Tree extends Component {
           return d.label.length > 12 || isLeaf(d) ? '12' : '14'
         })
         .style('cursor', function (d) {
-          if ((isLeaf(d) || isMaster(d)) || !collapsibleTree) {
-            return 'default'
-          }
           return 'pointer'
         })
         .style('transform', function () {
@@ -425,6 +415,9 @@ export default class Tree extends Component {
         .attr('fill-opacity', fillOpacity)
         .style('fill', function (d) {
           return d.fill ? d.fill : fill
+        })
+        .style('cursor', function (d) {
+          return 'pointer'
         })
         .style('stroke', function (d) {
           return d.stroke ? d.stroke : stroke
